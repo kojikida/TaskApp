@@ -14,6 +14,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var searchBar: UISearchBar!
     
+    
+       
     //Realmインスタンスを取得する
     let realm = try! Realm()
     //DB内のタスクが格納されるリスト
@@ -27,8 +29,10 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.delegate = self
         tableView.dataSource = self
         searchBar.delegate = self
+        searchBar.showsCancelButton = true
+        
     }
-     
+    //-------------------------------
     //データ数（=セルの数）を返すメソッド
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return taskArray.count
@@ -51,7 +55,7 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         
         return cell
     }
-    
+    //----------------------------------------
     //各セルを選択した時に実行されるメソッド
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: "cellSegue", sender: nil)
@@ -112,8 +116,26 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         tableView.reloadData()
         }
     
+//-----------------------------------------------------------------------------------------------
+//検索機能についての記述
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        
+        
+        if searchBar.text != nil && !searchBar.text!.isEmpty  {
+            let predicate = NSPredicate(format: "category = %@", searchBar.text!)
+            taskArray = realm.objects(Task.self).filter(predicate)
+            //tableViewを再読み込みする
+            tableView.reloadData()
+        }
+    }
     
-    
-   
+    //キャンセルボタンが押されると呼ばれる
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        taskArray = try! Realm().objects(Task.self).sorted(byKeyPath: "date", ascending: true)
+        
+        //tableViewを再読み込みをする
+        tableView.reloadData()
+    }
     
 }
